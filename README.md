@@ -11,6 +11,7 @@
 ###INTEGRATION
 1. Integrate each one of the samples with the healthy donor
 2. Differential analysis healthy vs uncorrected and healthy vs corrected
-3. 
+3. GSEA analysis in the contrast healthy vs uncorrected
+4. 
   
   
