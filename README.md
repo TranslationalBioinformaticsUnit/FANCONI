@@ -7,5 +7,10 @@
 3. Differential analysis corrected vs uncorrected per cell type
 4. GSEA analysis in each one of the cell types
 
+
+###INTEGRATION
+1. Integrate each one of the samples with the healthy donor
+2. Differential analysis healthy vs uncorrected and healthy vs corrected
+3. 
   
   
