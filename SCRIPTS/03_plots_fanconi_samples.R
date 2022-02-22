@@ -28,37 +28,32 @@ pdf("FANCA_expression_fanconis.pdf", width=10)
 p +theme_bw()
 dev.off()
 
-## Number of corrected and uncorrected cells by cell type and sample
+#read data
+data<-read.csv("data_to_barplot.csv", sep=";")
 
-df<-read.csv("/datos_2/FANCONI/Fanconi_integrated/data_to_barplot.csv", sep=";")
-df$Sample<-as.factor(df$Sample)
+#reorder the data
 
-df$Cell_type<-factor(x=df$Cell_type, levels=c("HSC", "LMPP","Cycling_LMPP","GMP1","GMP2","Monocytes","DC","CLP","PreB","MEP","Erythroid","Basophils"))
+data$Cell_type<-factor(data$Cell_type, levels<-c("HSC", "LMPP","Cycling_LMPP","GMP1","GMP2","Monocytes","DC","CLP","PreB","MEP","Erythroid","Basophils")
+)
 
-q<-ggplot(df,aes(x=Sample,y=Count, fill=Correction))+
+#raw plot
+p0 <- ggplot(data,aes(x=as.factor(Sample),y=Count, fill=Correction))+
   geom_bar(stat = "identity",color="white")+
-  facet_wrap(~Cell_type, nrow=1) +scale_y_break(c(18, 21)) 
-  
+  facet_wrap(~Cell_type, nrow=1) +
+  ylim(0,9000) +
+  theme_bw() 
 
+p0 + scale_y_break(c(520,700), scales=0.10, space=0.01) + scale_y_break(c(1800,7400), scales=0.05, space=0.01)
 
-scale_x_continuous(breaks = seq(-3, 4, 0.2)) 
-pdf("Correction_by_celltype_def.pdf", width=13)
-p1<-q + theme_bw()
-p1+ theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1)) bp + coord_flip()
-
-require(plotrix)
-gap.barplot( as.matrix(df$Count), 
-             beside = TRUE, col=as.factor(df$Correction),
-             gap=c(1800,7000)), 
-             ytics=c(0,3000,6000,9000,24000,25200,26400) )
-
+pdf("barplot_number_cells_breaks.pdf", width=15)
+p0 + scale_y_break(c(520,700), scales=0.10, space=0.01) + scale_y_break(c(1800,7400), scales=0.05, space=0.01)
 dev.off()
 
-## Compare DEGs of the 3 patients (use likert library)
+## Compare DEGs of the 4 patients (use likert library)
 
-load("merge_samples_contrast_def.RDA")
+load("/datos_2/FANCONI/MERGE_4/heatmap_all.rda")
 
-## in this RDA we have all the data for each one of the patients (fanconi_2004, fanconi_2006, fanconi_2008)
+## in this RDA we have all the data for each one of the patients (fanconi_2002, fanconi_2004, fanconi_2006, fanconi_2008)
 
 
 # create all the columns for each of the samples
@@ -70,7 +65,7 @@ fanconi_2008$PreB<-rep(0, nrow(fanconi_2008))
 
 
 ## talke
-sig_genes<-as.character(sig_genes$x)
+sig_genes<-rownames(union) # take the genes that are significant in at least one sample and one celltype
 fanconi_2002_sig<-data_fanconi[sig_genes,]
 fanconi_2004_sig<-fanconi_2004[sig_genes,]
 fanconi_2006_sig<-fanconi_2006[sig_genes,]
@@ -97,22 +92,6 @@ pdf("likert_plot_UNION_genes.pdf", height=10, width=10)
 our.likert.bar.plot(p,include.histogram = TRUE, color=c(brewer.pal(n = 8, name = "YlGnBu")[c(7,5)],brewer.pal(n = 8, name = "YlOrRd")[c(4,7)]))
 dev.off()
 
-
-## plot fanconi pathway for monocytes in each sample
-
-setwd("Fanconi_integrated/KEEGplot/")
-
-Sample<-c("2004","2006","2008") 
-
-
-
-for (i in 1:length(Sample)){
-  DE_genes<-read.table(paste0("Monocytes_",Sample[i],".txt"))
-  png(paste0("Fanconi_integrated/Fanconi_KEGG_pathway_",Sample[i],".png"))
-  pathview(gene.data = DE_genes, species = "hsa", pathway.id = "hsa03460", gene.idtype = "SYMBOL", out.suffix =Sample[i],kegg.native=FALSE)
- )
-    dev.off()
-  }
 
 
 
