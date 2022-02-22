@@ -23,17 +23,17 @@ celltype<-c("HSC","LMPP","Cycling_LMPP","GMP1","GMP2","Monocytes","DC","CLP","Pr
 
 for (i in 1:length(celltype)){
   set.seed(1234567)
-  dea_res<-read.table(paste0("Fanconi_2002/Integration/Healthy_Uncorrected_",celltype[i],".txt"))
+  dea_res<-read.table(paste0("Fanconi_2002/Integration/Healthy_Uncorrected_",celltype[i],".txt")) # load the results of DEA analysis
   
-  ranked_genes<-dea_res[,paste0("avg_logFC_" ,celltype[i])]
-  names(ranked_genes)<-rownames(dea_res)
-  ranked_genes <- sort(ranked_genes, decreasing = T)
+  ranked_genes<-dea_res[,paste0("avg_logFC_" ,celltype[i])] # take only the value of the logFC
+  names(ranked_genes)<-rownames(dea_res) # order the genes depending on the logFC value
+    ranked_genes <- sort(ranked_genes, decreasing = T)
   head(ranked_genes)
   tail(ranked_genes)
   
   
   
-  gse_Basohphils_integration_2002<-gseGO(geneList = ranked_genes, OrgDb = org.Hs.eg.db,
+  gse_Basohphils_integration_2002<-gseGO(geneList = ranked_genes, OrgDb = org.Hs.eg.db, #calcula the enrichment with GO pathways
              keyType = 'SYMBOL',
              ont = "BP", nPerm = 1000,
              minGSSize = 10, maxGSSize = 200,
@@ -47,12 +47,12 @@ for (i in 1:length(celltype)){
   ridgeplot(gse_Basophils_2008_2, showCategory =length(pathways))
   dev.off()
 
-  write.table(gse_Basohphils_integration_2002,paste0("Fanconi_2002/Integration//GSEA/GO_",celltype[i],".txt", sep=""),
-  sep="\t",quote=F,row.names=F)
+  write.table(gse_Basohphils_integration_2002,paste0("Fanconi_2002/Integration/GSEA/GO_",celltype[i],".txt", sep=""),
+  sep="\t",quote=F,row.names=F) # write the results of the analysis 
  
 }
 
-## Ridgeplot of all the data together
+## Ridgeplot of all the data together, to understand the function check our_ridgeplot.R script
 
 source("/datos_2/FANCONI/SCRIPTS/our_ridgeplot.R")
 

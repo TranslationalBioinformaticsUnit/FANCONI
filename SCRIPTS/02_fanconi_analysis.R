@@ -42,7 +42,7 @@ fanconi<-Read10X("DATA/fanconi_eltrombopag")
  abline(h=c(1000,7000),v=c(2500,7e04),col="red",lty=2)
  
  # Filtering based on QC parameters
- fanconi <- subset(fanconi, subset = nFeature_RNA > 700 & nFeature_RNA < 7000 & nCount_RNA > 1000 & nCount_RNA < 5e04 & percent.mt < 10)
+ fanconi <- subset(fanconi, subset = nFeature_RNA > 700 & nFeature_RNA < 7000 & nCount_RNA > 1000 & nCount_RNA < 5e04 & percent.mt < 10)  # usually we filter nFeatures and nCouts 10 % up and down and MT at 10%
  
  # Normalize and Scale Data
  fanconi<-NormalizeData(fanconi)
@@ -97,7 +97,7 @@ ggplot(p0$data, aes(p0$data$UMAP_1, p0$data$UMAP_2)) +
 dev.off()
 
 
-fanconi<-readRDS("/datos_2/FANCONI/DATA/Fanconi_CD34_MO.rds")
+#fanconi<-readRDS("/datos_2/FANCONI/DATA/Fanconi_CD34_MO.rds")
 
 fanconi@meta.data$CellType<- fanconi@meta.data$predicted.id
 
@@ -153,95 +153,14 @@ p1+coord_flip()+theme(axis.text=element_text(size=10))
 dev.off()
 
 
-##honek funtzionatzen du
+
 p1<-ggplot(fanconi@meta.data, aes(x=CellType, fill=Correction)) +
 geom_bar() + 
 labs(title="Number of cells per Cell Type",x = "Cell_type", y = "Number of cells")+
 stat_count(aes(label = ..count..), geom = "text")
 ggsave(plot = p1, height = 7, width = 9, dpi=600, filename = "PLOTS/cells_by_cell_type.pdf")
 
-## MERGE ALL THE DATA FROM DEA AND PLOT HEATMAP
 
-dea_LMPP_fanconi<-read.table("Corrected_vs_uncorrected_LMPP.txt", sep="\t", header=T)
-dea_Cycling_LMPP_fanconi<-read.table("Corrected_vs_uncorrected_Cycling_LMPP.txt", sep="\t", header=T)
-dea_GMP1_fanconi<-read.table("Corrected_vs_uncorrected_GMP1.txt", sep="\t", header=T)
-dea_GMP2_fanconi<-read.table("Corrected_vs_uncorrected_GMP2.txt", sep="\t", header=T)
-dea_Monocytes_fanconi<-read.table("Corrected_vs_uncorrected_Monocytes.txt", sep="\t", header=T)
-dea_DC_fanconi<-read.table("Corrected_vs_uncorrected_DC.txt", sep="\t", header=T)
-dea_CLP_fanconi<-read.table("Corrected_vs_uncorrected_CLP.txt", sep="\t", header=T)
-dea_PreB_fanconi<-read.table("Corrected_vs_uncorrected_PreB.txt", sep="\t", header=T)
-dea_MEP_fanconi<-read.table("Corrected_vs_uncorrected_MEP.txt", sep="\t", header=T)
-dea_Erythroid_fanconi<-read.table("Corrected_vs_uncorrected_Erythroid.txt", sep="\t", header=T)
-dea_Basophils_fanconi<-read.table("Corrected_vs_uncorrected_Basophils.txt", sep="\t", header=T)
-
-
-## take only the significant genes in each case
-
-dea_LMPP_fanconi<-rownames(dea_LMPP_fanconi[dea_LMPP_fanconi$p_val_adj<0.05,])
-dea_Cycling_LMPP_fanconi<-rownames(dea_Cycling_LMPP_fanconi[dea_Cycling_LMPP_fanconi$p_val_adj<0.05,])
-dea_GMP1_fanconi<-rownames(dea_GMP1_fanconi[dea_GMP1_fanconi$p_val_adj<0.05,])
-dea_GMP2_fanconi<-rownames(dea_GMP2_fanconi[dea_GMP2_fanconi$p_val_adj<0.05,])
-dea_Monocytes_fanconi<-rownames(dea_Monocytes_fanconi[dea_Monocytes_fanconi$p_val_adj<0.05,])
-dea_DC_fanconi<-rownames(dea_DC_fanconi[dea_DC_fanconi$p_val_adj<0.05,])
-dea_CLP_fanconi<-rownames(dea_CLP_fanconi[dea_CLP_fanconi$p_val_adj<0.05,])
-dea_PreB_fanconi<-rownames(dea_PreB_fanconi[dea_PreB_fanconi$p_val_adj<0.05,])
-dea_MEP_fanconi<-rownames(dea_MEP_fanconi[dea_MEP_fanconi$p_val_adj<0.05,])
-dea_Erythroid_fanconi<-rownames(dea_Erythroid_fanconi[dea_Erythroid_fanconi$p_val_adj<0.05,])
-dea_Basophils_fanconi<-rownames(dea_Basophils_fanconi[dea_Basophils_fanconi$p_val_adj<0.05,])
-
-## take all the genes that are significant in at least 1 celltype
-
-background <- unique(c(dea_LMPP_fanconi, dea_Cycling_LMPP_fanconi, dea_GMP1_fanconi, dea_GMP2_fanconi,dea_Monocytes_fanconi,dea_DC_fanconi,dea_CLP_fanconi,dea_PreB_fanconi,dea_MEP_fanconi,dea_Erythroid_fanconi,dea_Basophils_fanconi))
-
-## HEATMAP OF THESE GENES, divided by celltype and correction
-
-sig_genes<-fanconi@assays$RNA@data[background,]
-
-design_matrix<-fanconi[background,]
-
-library(ComplexHeatmap)
-library(RColorBrewer)
-
-
-##get dimplot defaultcolors
-ggplotColours <- function(n = 6, h = c(0, 360) + 15){
-  if ((diff(h) %% 360) < 1) h[2] <- h[2] - 360/n
-  hcl(h = (seq(h[1], h[2], length = n)), c = 100, l = 65)
-}
-
-color_list <- ggplotColours(n=2)
-
-my_palette1 <- brewer.pal(8, "Dark2")
-my_palette2 <- brewer.pal(11, "Paired")
-
-ha1 <- HeatmapAnnotation(
-  Cell_type = design_matrix$CellType,
-  Correction = design_matrix$Correction,
-  col = list(Correction = c("Corrected"="#F8766D","Uncorrected"="#00BFC4"),
-             Cell_type = c("HSC"=my_palette1[2],"LMPP"=my_palette2[1],
-                       "Cycling_LMPP"=my_palette2[2],"GMP1"=my_palette2[3],"GMP2"=my_palette2[4],
-                       "Monocytes"=my_palette2[6],"DC"=my_palette2[7],
-                       "CLP"=my_palette2[8], "PreB"=my_palette2[9],"MEP"=my_palette2[10],"Erythroid"=my_palette1[4],"Basophils"=my_palette2[5])),
-  show_annotation_name = TRUE
-  
-
-)
-
-sig_genes2<-as.matrix(sig_genes)
-data_to_plot2<- t(scale(t(sig_genes2)))
-
-#plot
-png("PLOTS/sig_genes_expression_names.png") 
-#jpeg("Results/MM/expression_heatmap_genotype.jpg", width=5000, height=5000, res=600)#
-
-Heatmap(data_to_plot2, name = "DEGs corrected vs uncorrected",
-        top_annotation = ha1, 
-        show_column_names = FALSE, show_row_names = TRUE, row_names_gp = gpar(fontsize = 1), 
-        cluster_rows = TRUE, cluster_columns = TRUE, use_raster=TRUE)
-
-
-
-dev.off()
 
 # plot fanca in a boxplot only of the corrected cells
 
@@ -257,7 +176,7 @@ p + geom_jitter(shape=16, position=position_jitter(0.2))+theme_bw()
 dev.off()
 
 
-#dea with all the genes logFC>0    
+#Differential expression analysis with all the genes logFC>0 per cell type  
 
 
 Cell_type<-c("HSC","LMPP","Cycling_LMPP","GMP1","GMP2","Monocytes","DC","CLP","MEP","Erythroid","Basophils") #HSC cab't be included, any corrected cell
@@ -299,6 +218,11 @@ MyMerge       <- function(x, y){
   return(df)
 }
 dat           <- Reduce(MyMerge, list( dea_LMPP_fanconi, dea_Cycling_LMPP_fanconi, dea_GMP1_fanconi, dea_GMP2_fanconi,dea_Monocytes_fanconi,dea_DC_fanconi,dea_CLP_fanconi, dea_PreB_fanconi,dea_MEP_fanconi,dea_Erythroid_fanconi,dea_Basophils_fanconi))
+
+
+## in dat we merge all the ifnormation of all the cell types
+
+# union or intersection is the list of gene of interest!!
 
 data_fanconi<-dat[union,]
 
