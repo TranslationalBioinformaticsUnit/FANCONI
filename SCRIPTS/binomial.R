@@ -3,15 +3,17 @@
 
 #### calculate binomial of each of the samples####
 
-load("/datos_2/FANCONI/MERGE_4/heatmap_all.rda")
+load("E:/FANCONI_analysis/MERGE_4/heatmap_all.rda")
 
 # select the data of each sample and split in two, one the fanconi sample and other the integrated data
 
-fanconi <- new_dataset_2[,c(1:10)]
-integrated <- new_dataset_2[,c(11:20)]
+all[is.na(all)]<-0
 
-N <- nrow(fanconi_2004)
-cells <- dim(fanconi_2004)[2]
+fanconi <- all[,c(1:10)]
+integrated <- all[,c(11:20)]
+
+N <- nrow(fanconi)
+cells <- dim(fanconi)[2]
 
 a <- data.frame()
 for (i in 1:N){
@@ -35,5 +37,5 @@ for (i in 1:ncol(a)){
 
 # adjust the p-value in each case
 
-pval_adjusted_2004<-p.adjust(pval_2004, method = "bonferrani")
+pval_adjusted_2004<-p.adjust(pval_2004, method = "bonferroni")
 
