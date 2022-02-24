@@ -18,6 +18,9 @@
 01_Cellranger_counts.sh: script to create count matrix from fastq files
 
 02_fanconi_analysis: all the steps of individual sample analysis (processing and annotation)
+
 03_plots_fanconi_samples: all the code for the plots of the fanconi samples (figure 2)
-04_GSEA: 
+
+04_GSEA: script for gene set enrichment analysis in each one of the fanconi samples and code for plotting the ridgeplots with our own function our_ridgeplot.R also attached in the folder
+
   
