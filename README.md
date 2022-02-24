@@ -53,6 +53,10 @@ proportions: script to calculate proportion test
 
 wilcoxon: script to do wilcoxon and annova analysis to compare fanca expression levels
 
+# DATA
+count_matrix: /mnt/resultados/oncohematologia/resultados/mlagasag/FANCONI_data
+
+rds files: /mnt/resultados/oncohematologia/resultados/mlagasag/FANCONI_analysis/DATA
 
 
 
